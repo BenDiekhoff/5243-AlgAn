@@ -15,31 +15,35 @@ int main() {
 
 	int n = sizeof(a) / sizeof(a[0]);
 
-	int one = 0;
+	int carryOne = 0;
 	int sum = 0;
 
 	for (int i = n; i > -1; i--) {
-		sum = a[i - 1] + b[i - 1] + one;
-
-		if (i == 0)
-			c[i] = one;
+		if (i == 0) {
+			c[i] = carryOne;
+			carryOne = 0;
+		}
+		
 
 		else {
+			sum = a[i - 1] + b[i - 1] + carryOne;
 			if (sum > 2) {
 				c[i] = 1;
-				one = 1;
+				carryOne = 1;
 			}
 			else if (sum > 1) {
 				c[i] = 0;
-				one = 1;
+				carryOne = 1;
 			}
 			else {
 				c[i] = sum;
-				one = 0;
+				carryOne = 0;
 			}
 		}
+		cout << carryOne << endl;
 
 	}
+	cout << endl;
 	for (int i = 0; i <= 6; i++)
 		cout << c[i] << " ";
 
