@@ -1,7 +1,7 @@
 import math
 import itertools
 
-second = 1000000# 1 microsecond is 1/1000000 seconds
+second = 1000000 # 1 microsecond is 1/1000000 seconds
 minute = 60 * second
 hour = 60 * minute
 day = 24 * hour
@@ -87,7 +87,7 @@ for (time, name) in zip(times, timeNames):
     print("N LG(N) largest size of n that can be solved in 1 {} is {} = {}".format(name,n,x))
     n=1
     print(x <= time)
-                
+
 
     # #sqrt n
     # while math.sqrt(n) < time:
@@ -102,14 +102,3 @@ for (time, name) in zip(times, timeNames):
     # x = math.log(n,2)
     # print("LG(N) largest size of n that can be solved in 1 {} is {} = {}".format(name,n,x))
     # n = 1
-
-
-
-
-
-
-
-
-
-
-
