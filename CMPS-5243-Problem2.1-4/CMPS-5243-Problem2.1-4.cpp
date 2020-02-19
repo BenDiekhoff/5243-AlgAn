@@ -14,32 +14,26 @@ int main() {
 	int c[7];
 
 	int n = sizeof(a) / sizeof(a[0]);
-
+	cout << n << '\n';
 	int carryOne = 0;
-	int sum = 0;
 
 	for (int i = n; i > -1; i--) {
-		if (i == 0) {
-			c[i] = carryOne;
+		//cout << i << ": ";
+
+		c[i] = a[i - 1] + b[i - 1] + carryOne;
+		//cout << '\n' << i-1 <<" ";
+		if (c[i] == 3) {
+			c[i] = 1;
+			carryOne = 1;
+		}
+		else if (c[i]==2) {
+			c[i] = 0;
+			carryOne = 1;
+		}
+		else {
 			carryOne = 0;
 		}
 		
-
-		else {
-			sum = a[i - 1] + b[i - 1] + carryOne;
-			if (sum > 2) {
-				c[i] = 1;
-				carryOne = 1;
-			}
-			else if (sum > 1) {
-				c[i] = 0;
-				carryOne = 1;
-			}
-			else {
-				c[i] = sum;
-				carryOne = 0;
-			}
-		}
 		cout << carryOne << endl;
 
 	}
