@@ -15,7 +15,6 @@ public:
     void enq(int val);
     void deq();
     void display();
-
 };
 
 void Queue::enq(int val) {
@@ -37,16 +36,16 @@ void Queue::deq() {
    if (head == tail){
        head = nullptr;
        tail = nullptr;
-
-        cout << "queue's empty ";
-         return;
+       cout << "queue's empty ";
+       return;
     }
+
    else {
-   node* temp = new node;
-   temp = head;
-   head = head->next;
-   delete temp;  
-   temp = NULL;  
+    node* temp = new node;
+    temp = head;
+    head = head->next;
+    delete temp;  
+    temp = NULL;  
    }
 }
 
@@ -57,12 +56,11 @@ void Queue::deq() {
         cout << temp->val << "\n";
         temp = temp->next;
     }
-
 }
 
 
 
-// vvvvvvvvvvvvvvvvvvvvvvvv  ALTERNATES  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+// vvvvvvvvvvvvvvvvvvvvvvvv  BAD!  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 //  void Queue::deq() {
 //      node* temp = head->next;
@@ -78,7 +76,7 @@ void Queue::deq() {
 //          temp = temp->next;
 //      }
 
-//      }
+//  }
 
 
 
