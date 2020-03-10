@@ -15,7 +15,7 @@ average number of probes for each method.
 #include <fstream>
 using namespace std;
 
-ofstream outfile("output.txt");
+ofstream outfile("output.csv");
 
 class HASH {
 private:
@@ -97,15 +97,15 @@ int HASH::Double_Probe(int key, int orig_loc, int table_size) {
     Print_Table
 	Parameters: One int
 
-    Prints the table in a nice, readable format to a .txt file.
+    Prints the table in a nice, readable format to a .csv file.
 ***********************************************************************/
 void HASH::Print_Table(int table_size) {
     int key;
-    outfile << setw(12) << left << "LOCATION" << "KEY\n";
+    outfile << setw(16) << left << "LOCATION," << "KEY\n";
 
     for (int loc = 0; loc < table_size; loc++) {
         key = table[loc];
-        outfile << setw(12) << loc << key << "\n";
+        outfile << setw(16) << loc << "," << key << "\n";
     }
 }
 
@@ -199,7 +199,7 @@ int HASH::Double_Probe_Pub(int key, int orig_loc, int table_size) {
 	Parameters: One int
 
     Caller function for Print_Table, which:
-    Prints the table in a nice, readable format to a .txt file.
+    Prints the table in a nice, readable format to a .csv file.
 ***********************************************************************/
 void HASH::Print_Table_Pub(int table_size) {
     Print_Table(table_size);
@@ -236,7 +236,7 @@ int main() {
                 // all values into the table
                 probe_count += h.Lin_Probe_Pub(key, orig_loc, table_size);
             }
-            outfile << "LINEAR PROBE\n================\n";
+            outfile << "LINEAR PROBE\n==============\n";
         }
 
         else if (i == 1) {
@@ -247,44 +247,15 @@ int main() {
                 // all values into the table
                 probe_count += h.Double_Probe_Pub(key, orig_loc, table_size);
             }
-            outfile << "DOUBLE HASH\n================\n";
+            outfile << "DOUBLE HASH\n==============\n";
         }
         avg_probes = probe_count / n;
-        outfile << "Average number of probes: " << fixed << setprecision(3) 
-            << avg_probes << "\n";
-        h.Print_Table_Pub(table_size);
-        outfile << "\n\n";
+    h.Print_Table_Pub(table_size);
+    outfile << "\n\n"
+        << "Average number of probes: " << fixed << setprecision(3) 
+        << avg_probes << "\n";
     }
 
     outfile.close();
     return 0;
 }
-
-// cout << "key\torigloc\tactloc\tprobes\n";
-
-// for (auto key : data) {
-//     cout << key << "\t";
-//     orig_loc = h.Mod_Hash(key, table_size); // determines hash location for key
-//     cout << orig_loc << "\t";
-//     linearProbeCount = h.Lin_Probe(key, orig_loc, table_size);
-//     act_loc = (orig_loc + linearProbeCount - 1) % table_size;
-//     cout << act_loc << "\t";
-//     cout << linearProbeCount << "\n";
-// }
-
-// // reset the table
-// for (int i = 0; i < table_size; i++) {
-//     h.table[i] = -9999;
-// }
-// cout << "\n\nDOUBLE HASHING\n";
-// cout << "key\torigloc\tactloc\tprobes\n";
-// for (auto key : data) {
-//     cout << key << "\t";
-//     orig_loc = h.Mod_Hash(key, table_size); // determines hash location for key
-//     cout << orig_loc << "\t";
-//     doubleProbeCount = h.Double_Probe(key, orig_loc, table_size);
-//     act_loc = orig_loc;
-//     cout << act_loc << "\t";
-//     cout << doubleProbeCount << "\n";
-// }
-
