@@ -7,19 +7,20 @@
 //***************************************************************
 /*
 This program takes a set of keys, hashes them using linear probing and double
-hashing, and returns the complete hash tables for each CRP as well as the 
+hashing, and returns the complete hash tables for each CRP as well as the
 average number of probes for each method.
 /******************************************************************/
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <utility>
 using namespace std;
+ofstream outfile("output.txt");
 
-ofstream outfile("output.csv");
 
 class HASH {
 private:
-    int* table;                             // the hash table
+    pair<int,int>* table;                      // the hash table
     void Clean_Table(int);
     int Lin_Probe(int, int, int);
     int Double_Probe(int, int, int);
@@ -38,74 +39,86 @@ public:
 
 /**********************************************************************
     Clean_Table
-	Parameters: One int
-    
-    Sets every value in the dyanimcally allocated table to -9999.
+    Parameters: One int
+
+    Sets every value in the dyanimcally allocated table to a sentinel value.
 ***********************************************************************/
 void HASH::Clean_Table(int table_size) {
     for (int i = 0; i < table_size; i++) {
-        table[i] = -9999;
+        table[i].first = -9999; //table[i].first holds keys
+        table[i].second = 0;   //table[i].second holds a probe count
     }
 }
 
 
 /**********************************************************************
     Lin_Probe
-	Parameters: Three ints
-
-    Inserts a key into an "empty" slot in the table (orig_loc by default), 
+    Parameters: Three ints
+    Inserts a key into an "empty" slot in the table (orig_loc by default),
     where -9999 is considered empty. If the orig_loc isn't empty, it increments
-    through the table one index at a time (mod table_size) until an empty slot 
-    is found. It returns the number of probes it takes for successful insertion.
+    through the table one index at a time (mod table_size) until an empty slot
+    is found. It returns the number of probes it takes for successful 
+    insertion, as well as storing that value in table[oirg_loc].second.
 ***********************************************************************/
 int HASH::Lin_Probe(int key, int orig_loc, int table_size) {
     int count = 1;
 
-    while (table[orig_loc] != -9999) {
+    //table[i].first holds keys
+    //table[i].second holds a probe count
+    while (table[orig_loc].first != -9999) {
         count++;
         orig_loc = (orig_loc + 1) % table_size;
     }
-    table[orig_loc] = key;
+    table[orig_loc].first = key;
+    table[orig_loc].second = count;
     return count;
 }
 
 
+
 /**********************************************************************
     Double_Probe
-	Parameters: Three ints
-
-    Inserts a key into an "empty" slot in the table (orig_loc by default), 
+    Parameters: Three ints
+    Inserts a key into an "empty" slot in the table (orig_loc by default),
     where -9999 is considered empty. If the orig_loc isn't empty, it increments
     through the table based on the last digit of the key + 1. When it finds an
     empty slot the key is inserted. It returns the number of probes it takes 
-    for successful insertion.
+    for successful insertion, as well as storing that value in 
+    table[oirg_loc].second.
 ***********************************************************************/
 int HASH::Double_Probe(int key, int orig_loc, int table_size) {
     int increment = (key % 10) + 1;
     int count = 1;
 
-    while (table[orig_loc] != -9999) {
+    //table[i].first holds keys
+    //table[i].second holds a probe count
+    while (table[orig_loc].first != -9999) {
         count++;
         orig_loc = (orig_loc + increment) % table_size;
     }
-    table[orig_loc] = key;
+    table[orig_loc].first = key;
+    table[orig_loc].second = count;
     return count;
 }
 
 
 /**********************************************************************
     Print_Table
-	Parameters: One int
-
-    Prints the table in a nice, readable format to a .csv file.
+    Parameters: One int
+    Prints the table in a nice, readable format to a .txt file.
+    -9999 as a value under KEY means there was nothing inserted into
+    that location. The same is true whe PROBES is 0.
 ***********************************************************************/
 void HASH::Print_Table(int table_size) {
-    int key;
-    outfile << setw(16) << left << "LOCATION," << "KEY\n";
 
+    outfile << setw(18) << left << "LOCATION" << setw(10)<<"KEY" <<right 
+        <<setw(10) << "PROBES\n";
+
+    //table[i].first holds keys
+    //table[i].second holds a probe count
     for (int loc = 0; loc < table_size; loc++) {
-        key = table[loc];
-        outfile << setw(16) << loc << "," << key << "\n";
+        outfile <<left<< setw(18) << loc << setw(10)<< table[loc].first 
+           <<right <<setw(10)<< table[loc].second <<  "\n";
     }
 }
 
@@ -119,19 +132,19 @@ void HASH::Print_Table(int table_size) {
 
 /**********************************************************************
     HASH
-	Parameters: One int
-
+    Parameters: One int
     Constructor for the HASH class.
 ***********************************************************************/
 HASH::HASH(int table_size) {
-    table = new int[table_size];
+    table = new pair<int,int>[table_size];  
+    //table[i].first holds keys
+    //table[i].second holds a probe count
 }
 
 
 /**********************************************************************
     HASH
-	Parameters: None
-
+    Parameters: None
     Destructor for the HASH class.
 ***********************************************************************/
 HASH::~HASH() {
@@ -142,9 +155,8 @@ HASH::~HASH() {
 
 /**********************************************************************
     Mod_Hash
-	Parameters: Two ints
-
-    Calculates and returns the initial hash location for a given key. 
+    Parameters: Two ints
+    Calculates and returns the initial hash location for a given key.
 ***********************************************************************/
 int HASH::Mod_Hash(int key, int table_size) {
     return (key % table_size);
@@ -153,8 +165,7 @@ int HASH::Mod_Hash(int key, int table_size) {
 
 /**********************************************************************
     Clean_Table_Pub
-	Parameters: Three ints
-
+    Parameters: Three ints
     Caller function for Clean_Table, which:
     Sets every value in the dyanimcally allocated table to -9999.
 ***********************************************************************/
@@ -165,13 +176,13 @@ void HASH::Clean_Table_Pub(int table_size) {
 
 /**********************************************************************
     Lin_Probe_Pub
-	Parameters: Three ints
-
+    Parameters: Three ints
     Caller function for Lin_Probe, which:
-    Inserts a key into an "empty" slot in the table (orig_loc by default), 
+    Inserts a key into an "empty" slot in the table (orig_loc by default),
     where -9999 is considered empty. If the orig_loc isn't empty, it increments
-    through the table one index at a time (mod table_size) until an empty slot 
-    is found. It returns the number of probes it takes for successful insertion.
+    through the table one index at a time (mod table_size) until an empty slot
+    is found. It returns the number of probes it takes for successful 
+    insertion, as well as storing that value in table[oirg_loc].second.
 ***********************************************************************/
 int HASH::Lin_Probe_Pub(int key, int orig_loc, int table_size) {
     return Lin_Probe(key, orig_loc, table_size);
@@ -180,14 +191,14 @@ int HASH::Lin_Probe_Pub(int key, int orig_loc, int table_size) {
 
 /**********************************************************************
     Double_Probe_Pub
-	Parameters: Three ints
-
+    Parameters: Three ints
     Caller function for Double_Probe, which:
-    Inserts a key into an "empty" slot in the table (orig_loc by default), 
+    Inserts a key into an "empty" slot in the table (orig_loc by default),
     where -9999 is considered empty. If the orig_loc isn't empty, it increments
     through the table based on the last digit of the key + 1. When it finds an
-    empty slot the key is inserted. It returns the number of probes it takes 
-    for successful insertion.
+    empty slot the key is inserted. It returns the number of probes it takes
+    for successful insertion, as well as storing that value in
+    table[oirg_loc].second.
 ***********************************************************************/
 int HASH::Double_Probe_Pub(int key, int orig_loc, int table_size) {
     return Double_Probe(key, orig_loc, table_size);
@@ -196,10 +207,11 @@ int HASH::Double_Probe_Pub(int key, int orig_loc, int table_size) {
 
 /**********************************************************************
     Print_Table_Pub
-	Parameters: One int
-
+    Parameters: One int
     Caller function for Print_Table, which:
-    Prints the table in a nice, readable format to a .csv file.
+    Prints the table in a nice, readable format to a .txt file.
+    -9999 as a value under KEY means there was nothing inserted into
+    that location. The same is true whe PROBES is 0.
 ***********************************************************************/
 void HASH::Print_Table_Pub(int table_size) {
     Print_Table(table_size);
@@ -219,7 +231,7 @@ int main() {
         339,42 };  // Data to be inserted into the hash table
     double n = sizeof(data) / sizeof(data[0]);  // number of items to insert
     double alpha = n / table_size;  // Load factor
-    double avg_probes = -1.1; // Avg number of probes for inserting into a table
+    double avg_probes = -1.1; // Avg # of probes for inserting into a table
 
     HASH h(table_size);
 
@@ -231,7 +243,7 @@ int main() {
         if (i == 0) {
             for (auto key : data) {
                 // determines hash location for key
-                orig_loc = h.Mod_Hash(key, table_size); 
+                orig_loc = h.Mod_Hash(key, table_size);
                 // accumulator for the number of probes required to insert
                 // all values into the table
                 probe_count += h.Lin_Probe_Pub(key, orig_loc, table_size);
@@ -250,10 +262,9 @@ int main() {
             outfile << "DOUBLE HASH\n==============\n";
         }
         avg_probes = probe_count / n;
-    h.Print_Table_Pub(table_size);
-    outfile << "\n\n"
-        << "Average number of probes: " << fixed << setprecision(3) 
-        << avg_probes << "\n";
+        h.Print_Table_Pub(table_size);
+        outfile << "\nAvg # of probes: " << fixed << setprecision(3)
+            <<setw(21)<< avg_probes << "\n\n";
     }
 
     outfile.close();
