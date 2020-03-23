@@ -14,8 +14,11 @@ average number of probes for each method.
 #include <iomanip>
 #include <fstream>
 #include <utility>
+#include <ctime>
 using namespace std;
 ofstream outfile("output.txt");
+ofstream datafile66("dataAlpha66.txt");
+ofstream datafile80("dataAlpha80.txt");
 
 
 class HASH {
@@ -224,24 +227,63 @@ void HASH::Print_Table_Pub(int table_size) {
 //////////////////////////////////////////////////////////////////////////
 
 int main() {
-    const int table_size = 31;
+
+    const int table_size = 311;
     int probe_count = 0;  // 0 is a sentinel value
     int orig_loc = -1;  // Location a key is initially hashed toS
-    int data[] = { 3,9,44,123,99,332,69,97,33,22,52,569,873,773,987,35,14,89,
-        339,42 };  // Data to be inserted into the hash table
-    double n = sizeof(data) / sizeof(data[0]);  // number of items to insert
-    double alpha = n / table_size;  // Load factor
     double avg_probes = -1.1; // Avg # of probes for inserting into a table
+    double n;  // number of items to insert
+    double alpha;  // Load factor
+
+    int dataAlpha66[205];   //holds random data set for the 66% probes
+    int dataAlpha80[250];   //holds random data set for the 80% probes
+    int* data;              //points to the data set to be used
+
+
+    // fill the data sets with random numbers
+    srand(time(NULL));
+    for (int i = 0; i < 205; i++) {
+        dataAlpha66[i] = rand();
+        datafile66 <<setw(8) << dataAlpha66[i] ;
+        if (i > 0 && i % 10 == 9)
+            datafile66 << "\n";
+    }
+    
+    for (int i = 0; i < 250; i++) {
+        dataAlpha80[i] = rand();
+        datafile80 <<setw(8) << dataAlpha80[i] ;
+        if (i > 0 && i % 10 == 9)
+            datafile80 << "\n";
+    }
+
+    // Loop through the 4 experiments
+    for (int i = 0; i < 4; i++) {
+       
+        //determine which data set to use
+        if (i == 0 || i == 2){
+            data = dataAlpha66;
+        }
+        else {
+            data = dataAlpha80;
+        }
 
     HASH h(table_size);
 
-    for (int i = 0; i < 2; i++) {
+    //make sure variables are reset
+    probe_count = 0;  
+    orig_loc = -1;  
+    avg_probes = -1.1; 
+    n = sizeof(*data) / sizeof(data[0]);  
+    alpha = n / table_size;  
+        
+
+
         probe_count = 0;
 
         h.Clean_Table_Pub(table_size); // Set all values in h.table to -9999
 
-        if (i == 0) {
-            for (auto key : data) {
+        if (i < 2) {
+            for (auto key : *data) {
                 // determines hash location for key
                 orig_loc = h.Mod_Hash(key, table_size);
                 // accumulator for the number of probes required to insert
@@ -251,7 +293,7 @@ int main() {
             outfile << "LINEAR PROBE\n==============\n";
         }
 
-        else if (i == 1) {
+        else  {
             for (auto key : data) {
                 // determines hash location for key
                 orig_loc = h.Mod_Hash(key, table_size);
@@ -268,5 +310,8 @@ int main() {
     }
 
     outfile.close();
+    datafile66.close();
+    datafile80.close();
     return 0;
 }
+
