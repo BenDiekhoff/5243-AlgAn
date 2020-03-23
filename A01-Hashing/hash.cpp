@@ -248,7 +248,7 @@ int main() {
         
         //Fill dupTable with sentinel values so 0 can be checked for
             for (int i = 0; i < 5000; i++){
-                dupTable[i] = -1
+                dupTable[i] = -1;
             }
 
         // fill the data array with random numbers
@@ -257,7 +257,7 @@ int main() {
 
             //check for and prevent duplicates
             while (dupTable[data[i]] == 1) {
-                data[i] = rand() % 5000 + 1;
+                data[i] = rand() % 5000;
             }
             dupTable[data[i]] = 1;
 
