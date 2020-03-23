@@ -3,7 +3,7 @@
 // Name: Ben Diekhoff
 // CMPS 5243 Algorithms
 // Dr. Halverson
-// Date: 03/10/2020
+// Date: 03/24/2020
 //***************************************************************
 /*
 This program takes a set of keys, hashes them using linear probing and double
@@ -320,7 +320,7 @@ int main() {
                 << setw(21) << avg_probes << "\n\n";
         }
         if (iter == 0)
-            datafile << "\n============== ITERATION 2 BEGINS HERE ==============\n";
+            datafile << "\n============ ITERATION 2 BEGINS HERE ============\n";
     }
     outfile.close();
     datafile.close();
