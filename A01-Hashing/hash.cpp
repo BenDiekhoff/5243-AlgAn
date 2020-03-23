@@ -17,13 +17,13 @@ average number of probes for each method.
 #include <ctime>
 using namespace std;
 ofstream outfile("output.txt");
-ofstream datafile66("dataAlpha66.txt");
-ofstream datafile80("dataAlpha80.txt");
+ofstream datafile("datafile.txt");
+
 
 
 class HASH {
 private:
-    pair<int,int>* table;                      // the hash table
+    pair<int, int>* table;                      // the hash table
     void Clean_Table(int);
     int Lin_Probe(int, int, int);
     int Double_Probe(int, int, int);
@@ -60,7 +60,7 @@ void HASH::Clean_Table(int table_size) {
     Inserts a key into an "empty" slot in the table (orig_loc by default),
     where -9999 is considered empty. If the orig_loc isn't empty, it increments
     through the table one index at a time (mod table_size) until an empty slot
-    is found. It returns the number of probes it takes for successful 
+    is found. It returns the number of probes it takes for successful
     insertion, as well as storing that value in table[oirg_loc].second.
 ***********************************************************************/
 int HASH::Lin_Probe(int key, int orig_loc, int table_size) {
@@ -85,8 +85,8 @@ int HASH::Lin_Probe(int key, int orig_loc, int table_size) {
     Inserts a key into an "empty" slot in the table (orig_loc by default),
     where -9999 is considered empty. If the orig_loc isn't empty, it increments
     through the table based on the last digit of the key + 1. When it finds an
-    empty slot the key is inserted. It returns the number of probes it takes 
-    for successful insertion, as well as storing that value in 
+    empty slot the key is inserted. It returns the number of probes it takes
+    for successful insertion, as well as storing that value in
     table[oirg_loc].second.
 ***********************************************************************/
 int HASH::Double_Probe(int key, int orig_loc, int table_size) {
@@ -113,15 +113,16 @@ int HASH::Double_Probe(int key, int orig_loc, int table_size) {
     that location. The same is true whe PROBES is 0.
 ***********************************************************************/
 void HASH::Print_Table(int table_size) {
-
-    outfile << setw(18) << left << "LOCATION" << setw(10)<<"KEY" <<right 
-        <<setw(10) << "PROBES\n";
+    outfile << setw(18) << left << "LOCATION" << setw(10) << "KEY"
+        << setw(10) << "PROBES" << "\n";
+    
+    outfile << "\n";
 
     //table[i].first holds keys
     //table[i].second holds a probe count
     for (int loc = 0; loc < table_size; loc++) {
-        outfile <<left<< setw(18) << loc << setw(10)<< table[loc].first 
-           <<right <<setw(10)<< table[loc].second <<  "\n";
+        outfile << left << setw(18) << loc << setw(10) << table[loc].first
+            << setw(10) << table[loc].second << "\n";
     }
 }
 
@@ -139,7 +140,7 @@ void HASH::Print_Table(int table_size) {
     Constructor for the HASH class.
 ***********************************************************************/
 HASH::HASH(int table_size) {
-    table = new pair<int,int>[table_size];  
+    table = new pair<int, int>[table_size];
     //table[i].first holds keys
     //table[i].second holds a probe count
 }
@@ -184,7 +185,7 @@ void HASH::Clean_Table_Pub(int table_size) {
     Inserts a key into an "empty" slot in the table (orig_loc by default),
     where -9999 is considered empty. If the orig_loc isn't empty, it increments
     through the table one index at a time (mod table_size) until an empty slot
-    is found. It returns the number of probes it takes for successful 
+    is found. It returns the number of probes it takes for successful
     insertion, as well as storing that value in table[oirg_loc].second.
 ***********************************************************************/
 int HASH::Lin_Probe_Pub(int key, int orig_loc, int table_size) {
@@ -232,86 +233,97 @@ int main() {
     int probe_count = 0;  // 0 is a sentinel value
     int orig_loc = -1;  // Location a key is initially hashed toS
     double avg_probes = -1.1; // Avg # of probes for inserting into a table
+    int data[250] = { 0 }; // holds random numbers to be hashed
     double n;  // number of items to insert
     double alpha;  // Load factor
-
-    int dataAlpha66[205];   //holds random data set for the 66% probes
-    int dataAlpha80[250];   //holds random data set for the 80% probes
-    int* data;              //points to the data set to be used
-
-
-    // fill the data sets with random numbers
-    srand(time(NULL));
-    for (int i = 0; i < 205; i++) {
-        dataAlpha66[i] = rand();
-        datafile66 <<setw(8) << dataAlpha66[i] ;
-        if (i > 0 && i % 10 == 9)
-            datafile66 << "\n";
-    }
-    
-    for (int i = 0; i < 250; i++) {
-        dataAlpha80[i] = rand();
-        datafile80 <<setw(8) << dataAlpha80[i] ;
-        if (i > 0 && i % 10 == 9)
-            datafile80 << "\n";
-    }
-
-    // Loop through the 4 experiments
-    for (int i = 0; i < 4; i++) {
-       
-        //determine which data set to use
-        if (i == 0 || i == 2){
-            data = dataAlpha66;
-        }
-        else {
-            data = dataAlpha80;
-        }
-
+    int key;        //The value to be hashed
     HASH h(table_size);
+    srand(time(NULL));
+    int dupTable[5000] ; // Serves as a direct mapping hash 
+                        // table so data won't hold any duplicate values.
 
-    //make sure variables are reset
-    probe_count = 0;  
-    orig_loc = -1;  
-    avg_probes = -1.1; 
-    n = sizeof(*data) / sizeof(data[0]);  
-    alpha = n / table_size;  
+
+    // Run all experiments twice
+    for (int iter = 0; iter < 2; iter++) {
         
-
-
-        probe_count = 0;
-
-        h.Clean_Table_Pub(table_size); // Set all values in h.table to -9999
-
-        if (i < 2) {
-            for (auto key : *data) {
-                // determines hash location for key
-                orig_loc = h.Mod_Hash(key, table_size);
-                // accumulator for the number of probes required to insert
-                // all values into the table
-                probe_count += h.Lin_Probe_Pub(key, orig_loc, table_size);
+        //Fill dupTable with sentinel values so 0 can be checked for
+            for (int i = 0; i < 5000; i++){
+                dupTable[i] = -1
             }
-            outfile << "LINEAR PROBE\n==============\n";
+
+        // fill the data array with random numbers
+        for (int i = 0; i < 250; i++) {
+            data[i] = rand() %5000;
+
+            //check for and prevent duplicates
+            while (dupTable[data[i]] == 1) {
+                data[i] = rand() % 5000 + 1;
+            }
+            dupTable[data[i]] = 1;
+
+            datafile << setw(8) << data[i];
+            if (i % 10 == 9)
+                datafile << "\n";
         }
 
-        else  {
-            for (auto key : data) {
-                // determines hash location for key
-                orig_loc = h.Mod_Hash(key, table_size);
-                // accumulator for the number of probes required to insert
-                // all values into the table
-                probe_count += h.Double_Probe_Pub(key, orig_loc, table_size);
+        // Loop through the 4 experiments
+        for (int i = 0; i < 4; i++) {
+
+            //make sure variables are reset
+            probe_count = 0;
+            orig_loc = -1;
+            avg_probes = -1.1;
+            probe_count = 0;
+            h.Clean_Table_Pub(table_size); // Set all values in h.table to -9999
+
+            //determine how much data to insert into the hash table
+            if (i == 0 || i == 2)
+                n = 205;
+            else
+                n = 250;
+
+            alpha = n / table_size;
+
+            // Linear Probe
+            if (i < 2) {
+                for (int i = 0; i < n; i++) {
+                    key = data[i];
+                    // determines hash location for key
+                    orig_loc = h.Mod_Hash(key, table_size);
+                    // accumulator for the number of probes required to insert
+                    // all values into the table
+                    probe_count += h.Lin_Probe_Pub(key, orig_loc, table_size);
+                }
+                outfile << "LINEAR PROBE WITH ALPHA = " << alpha
+                    << "\nIteration: " << iter + 1 << "\n==============\n";
+
             }
-            outfile << "DOUBLE HASH\n==============\n";
+
+            // Double Hash
+            else {
+                for (int i = 0; i < n; i++) {
+                    key = data[i];
+                    // determines hash location for key
+                    orig_loc = h.Mod_Hash(key, table_size);
+                    // accumulator for the number of probes required to insert
+                    // all values into the table
+                    probe_count += h.Double_Probe_Pub(key, orig_loc, table_size);
+                }
+                outfile << "DOUBLE HASH WITH ALPHA " << alpha
+                    << "\nIteration: " << iter + 1 << "\n==============\n";
+            }
+
+            // Print information to outfile
+            avg_probes = probe_count / n;
+            h.Print_Table_Pub(table_size);
+            outfile << "\nAvg # of probes: " << fixed << setprecision(3)
+                << setw(21) << avg_probes << "\n\n";
         }
-        avg_probes = probe_count / n;
-        h.Print_Table_Pub(table_size);
-        outfile << "\nAvg # of probes: " << fixed << setprecision(3)
-            <<setw(21)<< avg_probes << "\n\n";
+        if (iter == 0)
+            datafile << "\n============== ITERATION 2 BEGINS HERE ==============\n";
     }
-
     outfile.close();
-    datafile66.close();
-    datafile80.close();
+    datafile.close();
     return 0;
 }
 
