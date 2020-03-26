@@ -1,5 +1,5 @@
 //***************************************************************
-// Program #1 Hashing Expirement
+// Program #1 Hashing Experiment
 // Name: Ben Diekhoff
 // CMPS 5243 Algorithms
 // Dr. Halverson
@@ -17,7 +17,7 @@ average number of probes for each method.
 #include <ctime>
 using namespace std;
 ofstream outfile("output.txt");
-ofstream datafile("datafile.txt");
+ifstream datafile("datafile.txt");
 
 
 
@@ -230,42 +230,23 @@ void HASH::Print_Table_Pub(int table_size) {
 int main() {
 
     const int table_size = 311;
+    const int randData_size = 250;
     int probe_count = 0;  // 0 is a sentinel value
     int orig_loc = -1;  // Location a key is initially hashed toS
     double avg_probes = -1.1; // Avg # of probes for inserting into a table
-    int data[250] = { 0 }; // holds random numbers to be hashed
+    int randData[randData_size] = { 0 }; // holds random numbers to be hashed
     double n;  // number of items to insert
     double alpha;  // Load factor
     int key;        //The value to be hashed
     HASH h(table_size);
-    srand(time(NULL));
-    int dupTable[5000] ; // Serves as a direct mapping hash 
-                        // table so data won't hold any duplicate values.
-
 
     // Run all experiments twice
+        // Load the first half of the dataset into randData on iteration 0
+        // Load the second half on iteration 1
     for (int iter = 0; iter < 2; iter++) {
-        
-        //Fill dupTable with sentinel values so 0 can be checked for
-            for (int i = 0; i < 5000; i++){
-                dupTable[i] = -1;
-            }
-
-        // fill the data array with random numbers
-        for (int i = 0; i < 250; i++) {
-            data[i] = rand() %5000;
-
-            //check for and prevent duplicates
-            while (dupTable[data[i]] == 1) {
-                data[i] = rand() % 5000;
-            }
-            dupTable[data[i]] = 1;
-
-            datafile << setw(8) << data[i];
-            if (i % 10 == 9)
-                datafile << "\n";
-        }
-
+                for (int i = 0; i < randData_size; i++){
+                    datafile >> randData[i];
+                }
         // Loop through the 4 experiments
         for (int i = 0; i < 4; i++) {
 
@@ -287,7 +268,7 @@ int main() {
             // Linear Probe
             if (i < 2) {
                 for (int i = 0; i < n; i++) {
-                    key = data[i];
+                    key = randData[i];
                     // determines hash location for key
                     orig_loc = h.Mod_Hash(key, table_size);
                     // accumulator for the number of probes required to insert
@@ -302,7 +283,7 @@ int main() {
             // Double Hash
             else {
                 for (int i = 0; i < n; i++) {
-                    key = data[i];
+                    key = randData[i];
                     // determines hash location for key
                     orig_loc = h.Mod_Hash(key, table_size);
                     // accumulator for the number of probes required to insert
@@ -319,8 +300,6 @@ int main() {
             outfile << "\nAvg # of probes: " << fixed << setprecision(3)
                 << setw(21) << avg_probes << "\n\n";
         }
-        if (iter == 0)
-            datafile << "\n============ ITERATION 2 BEGINS HERE ============\n";
     }
     outfile.close();
     datafile.close();
